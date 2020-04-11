@@ -41,13 +41,14 @@ export class WekaTreeParserUtils {
 
         relevantSubstring = leafString.substring(startIndex);
 
+        const value: string = relevantSubstring.substring(0, relevantSubstring.indexOf('(') - 1) as string;
         const firstNumberString: string = relevantSubstring.substring(relevantSubstring.indexOf('(') +
             1, relevantSubstring.indexOf('/'));
         const secondNumberString = relevantSubstring.substring(relevantSubstring.indexOf('/') +
             1, relevantSubstring.indexOf(')'));
 
         return {
-            value: relevantSubstring.substring(0, relevantSubstring.indexOf('(') - 1) as string,
+            value: value,
             firstNumber: Number.parseFloat(firstNumberString),
             secondNumber: Number.parseFloat(secondNumberString)
         };
