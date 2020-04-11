@@ -1,63 +1,120 @@
-
 import {DecisionTree} from '../model/decision-tree/decision-tree.model';
 import {DecisionTreeLeaf} from '../model/decision-tree/decision-tree-leaf.model';
 import {WekaTreeParserUtils} from './weka-tree-parser.utils.';
 
 describe('WekaTreeParserUtils', () => {
 
-    test('should parse a leaf (1)', () => {
-        const testLeaf: string = `accelerationFrequencyBandEnergy10To14Hz >= 0.86 : train (1.23/0.22)`;
-        const result: DecisionTreeLeaf = WekaTreeParserUtils.parseLeaf(testLeaf);
-        expect(result.value).toEqual('train');
-        expect(result.firstNumber).toEqual(1.23);
-        expect(result.secondNumber).toEqual(0.22);
+    describe('Binary Tree', () => {
+        test('should parse a leaf (1)', () => {
+            const testLeaf: string = `accelerationFrequencyBandEnergy10To14Hz >= 0.86 : train (1.23/0.22)`;
+            const result: DecisionTreeLeaf = WekaTreeParserUtils.parseLeaf(testLeaf);
+            expect(result.predictedClass).toEqual('train');
+            expect(result.totalWeightCovered).toEqual(1.23);
+            expect(result.totalWeightMisclassified).toEqual(0.22);
+        });
+
+        test('should parse a leaf (2)', () => {
+            const testLeaf: string = `accelerationFrequencyBandEnergy8To10Hz < 0.49 : train (71.53/0)`;
+            const result: DecisionTreeLeaf = WekaTreeParserUtils.parseLeaf(testLeaf);
+            expect(result.predictedClass).toEqual('train');
+            expect(result.totalWeightCovered).toEqual(71.53);
+            expect(result.totalWeightMisclassified).toEqual(0);
+        });
+
+        test('should parse a tree (1)', () => {
+            const result: DecisionTree = WekaTreeParserUtils.parse(binaryTreeString1);
+            expect(result.splitValue).toEqual(0.86);
+            expect(result.splitAttribute).toEqual('accelerationFrequencyBandEnergy10To14Hz');
+            const leftChild: DecisionTree = result.children[0] as DecisionTree;
+            expect(leftChild.splitAttribute).toEqual('accelerationFrequencyBandEnergy8To10Hz');
+            expect(leftChild.splitValue).toEqual(0.49);
+            expect((leftChild.children[0] as DecisionTreeLeaf).predictedClass).toEqual('train');
+            expect((leftChild.children[1] as DecisionTreeLeaf).predictedClass).toEqual('bus');
+
+            const rightChild: DecisionTreeLeaf = result.children[1] as DecisionTreeLeaf;
+            expect(rightChild.predictedClass).toEqual('train');
+            expect(rightChild.totalWeightCovered).toEqual(1.23);
+            expect(rightChild.totalWeightMisclassified).toEqual(0.22);
+        });
+
+        test('should parse a tree (2)', () => {
+            const result: DecisionTree = WekaTreeParserUtils.parse(binaryTreeString2);
+            expect(result.splitValue).toEqual(4.99);
+            expect(result.splitAttribute).toEqual('accumulatedTravelDistance');
+            const leftChild: DecisionTree = result.children[0] as DecisionTree;
+            expect(leftChild.splitAttribute).toEqual('accelerationFrequencyBandEnergy22To25Hz');
+            expect(leftChild.splitValue).toEqual(0.09);
+            expect((leftChild.children[0] as DecisionTreeLeaf).predictedClass).toEqual('stationary');
+
+            const rightChild: DecisionTree = result.children[1] as DecisionTree;
+            expect(rightChild.splitAttribute).toEqual('trajectorySimilarityTrain');
+            expect(rightChild.splitValue).toEqual(920.02);
+        });
     });
 
-    test('should parse a leaf (2)', () => {
-        const testLeaf: string = `accelerationFrequencyBandEnergy8To10Hz < 0.49 : train (71.53/0)`;
-        const result: DecisionTreeLeaf = WekaTreeParserUtils.parseLeaf(testLeaf);
-        expect(result.value).toEqual('train');
-        expect(result.firstNumber).toEqual(71.53);
-        expect(result.secondNumber).toEqual(0);
-    });
+    describe('Normal Tree', () => {
+        test('should parse a leaf (1)', () => {
+            const testLeaf: string = `humidity = HIGH : tennis (1.23/0.22)`;
+            const result: DecisionTreeLeaf = WekaTreeParserUtils.parseLeaf(testLeaf);
+            expect(result.predictedClass).toEqual('tennis');
+            expect(result.totalWeightCovered).toEqual(1.23);
+            expect(result.totalWeightMisclassified).toEqual(0.22);
+        });
 
-    test('should parse a tree (1)', () => {
-        const result: DecisionTree = WekaTreeParserUtils.parse(treeString1);
-        expect(result.splitValue).toEqual(0.86);
-        expect(result.splitAttribute).toEqual('accelerationFrequencyBandEnergy10To14Hz');
-        const leftChild: DecisionTree = result.leftChild as DecisionTree;
-        expect(leftChild.splitAttribute).toEqual('accelerationFrequencyBandEnergy8To10Hz');
-        expect(leftChild.splitValue).toEqual(0.49);
-        expect((leftChild.leftChild as DecisionTreeLeaf).value).toEqual('train');
-        expect((leftChild.rightChild as DecisionTreeLeaf).value).toEqual('bus');
+        test('should parse a tree (1)', () => {
+            const root: DecisionTree = WekaTreeParserUtils.parse(normalTreeString1);
+            expect(root.splitAttribute).toEqual('predictionShort');
 
-        const rightChild: DecisionTreeLeaf = result.rightChild as DecisionTreeLeaf;
-        expect(rightChild.value).toEqual('train');
-        expect(rightChild.firstNumber).toEqual(1.23);
-        expect(rightChild.secondNumber).toEqual(0.22);
-    });
+            expect((root.splitValue as string[])[0]).toEqual('stationary');
+            expect((root.splitValue as string[])[1]).toEqual('walk');
+            expect((root.splitValue as string[])[2]).toEqual('bike');
+            expect((root.splitValue as string[])[3]).toEqual('car');
+            expect((root.splitValue as string[])[4]).toEqual('bus');
+            expect((root.splitValue as string[])[5]).toEqual('tram');
+            expect((root.splitValue as string[])[6]).toEqual('train');
 
-    test('should parse a tree (2)', () => {
-        const result: DecisionTree = WekaTreeParserUtils.parse(treeString2);
-        expect(result.splitValue).toEqual(4.99);
-        expect(result.splitAttribute).toEqual('accumulatedTravelDistance');
-        const leftChild: DecisionTree = result.leftChild as DecisionTree;
-        expect(leftChild.splitAttribute).toEqual('accelerationFrequencyBandEnergy22To25Hz');
-        expect(leftChild.splitValue).toEqual(0.09);
-        expect((leftChild.leftChild as DecisionTreeLeaf).value).toEqual('stationary');
 
-        const rightChild: DecisionTree = result.rightChild as DecisionTree;
-        expect(rightChild.splitAttribute).toEqual('trajectorySimilarityTrain');
-        expect(rightChild.splitValue).toEqual(920.02);
+            // ----- child1 -----
+            const child1: DecisionTree = root.children[0] as DecisionTree;
+            expect(child1.splitAttribute).toEqual('predictionLong');
+
+            expect((child1.splitValue as string[])[0]).toEqual('stationary');
+            expect((child1.splitValue as string[])[1]).toEqual('walk');
+            expect((child1.splitValue as string[])[2]).toEqual('bike');
+            expect((child1.splitValue as string[])[3]).toEqual('car');
+            expect((child1.splitValue as string[])[4]).toEqual('bus');
+            expect((child1.splitValue as string[])[5]).toEqual('tram');
+            expect((child1.splitValue as string[])[6]).toEqual('train');
+
+            expect((child1.children[0] as DecisionTreeLeaf).predictedClass).toEqual('stationary');
+            expect((child1.children[0] as DecisionTreeLeaf).totalWeightCovered).toEqual(361);
+            expect((child1.children[0] as DecisionTreeLeaf).totalWeightMisclassified).toEqual(1);
+
+            expect((child1.children[1] as DecisionTreeLeaf).predictedClass).toEqual('stationary');
+            expect((child1.children[1] as DecisionTreeLeaf).totalWeightCovered).toEqual(7);
+            expect((child1.children[1] as DecisionTreeLeaf).totalWeightMisclassified).toEqual(2);
+
+            expect((child1.children[3] as DecisionTree).splitAttribute).toEqual('predictionMedium');
+            expect((child1.children[3] as DecisionTree).children.length).toEqual(7);
+
+            // ----- child2 -----
+            const child2: DecisionTree = root.children[1] as DecisionTree;
+            expect(child2.splitAttribute).toEqual('predictionLong');
+            expect(child2.children.length).toEqual(7);
+            expect(child2.splitValue[5]).toEqual('tram');
+            expect((child2.children[5] as DecisionTreeLeaf).predictedClass).toEqual('bike');
+            expect((child2.children[5] as DecisionTreeLeaf).totalWeightCovered).toEqual(16);
+            expect((child2.children[5] as DecisionTreeLeaf).totalWeightMisclassified).toEqual(2);
+        });
     });
 });
 
-const treeString1: string = `accelerationFrequencyBandEnergy10To14Hz < 0.86
+const binaryTreeString1: string = `accelerationFrequencyBandEnergy10To14Hz < 0.86
 |   accelerationFrequencyBandEnergy8To10Hz < 0.49 : train (71.53/0)
 |   accelerationFrequencyBandEnergy8To10Hz >= 0.49 : bus (0.11/0)
 accelerationFrequencyBandEnergy10To14Hz >= 0.86 : train (1.23/0.22)`;
 
-const treeString2: string = `accumulatedTravelDistance < 4.99
+const binaryTreeString2: string = `accumulatedTravelDistance < 4.99
 |   accelerationFrequencyBandEnergy22To25Hz < 0.09 : stationary (431.61/0)
 |   accelerationFrequencyBandEnergy22To25Hz >= 0.09
 |   |   accelerationMean < 0.04
@@ -80,7 +137,7 @@ accumulatedTravelDistance >= 4.99
 |   |   |   |   |   acceleration95Quantile >= 0.07 : train (0.37/-0)
 |   |   |   |   accelerationMedian >= 0.04 : train (3.25/1)`;
 
-const normalTreeString2: string = `predictionShort = stationary
+const normalTreeString1: string = `predictionShort = stationary
 |   predictionLong = stationary : stationary (361/1)
 |   predictionLong = walk : stationary (7/2)
 |   predictionLong = bike : stationary (3/0)
@@ -213,5 +270,3 @@ predictionShort = train
 |   |   predictionLong = train : train (239/21)
 |   predictionMedium = tram : stationary (0/0)
 |   predictionMedium = train : stationary (0/0)`;
-
-

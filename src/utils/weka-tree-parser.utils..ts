@@ -8,7 +8,7 @@ import {DecisionTreeLeaf} from '../model/decision-tree/decision-tree-leaf.model'
 /**
  * Helper class to parse a decision tree from Weka with numerical attributes.
  */
-// TODO
+    // TODO
 export class WekaTreeParserUtils {
 
     /**
@@ -41,64 +41,81 @@ export class WekaTreeParserUtils {
 
         relevantSubstring = leafString.substring(startIndex);
 
-        const value: string = relevantSubstring.substring(0, relevantSubstring.indexOf('(') - 1) as string;
-        const firstNumberString: string = relevantSubstring.substring(relevantSubstring.indexOf('(') +
+        const predictedClass: string = relevantSubstring.substring(0, relevantSubstring.indexOf('(') - 1) as string;
+        const totalWeightCoveredString: string = relevantSubstring.substring(relevantSubstring.indexOf('(') +
             1, relevantSubstring.indexOf('/'));
-        const secondNumberString = relevantSubstring.substring(relevantSubstring.indexOf('/') +
+        const totalWeightMisclassifiedString = relevantSubstring.substring(relevantSubstring.indexOf('/') +
             1, relevantSubstring.indexOf(')'));
 
         return {
-            value: value,
-            firstNumber: Number.parseFloat(firstNumberString),
-            secondNumber: Number.parseFloat(secondNumberString)
+            predictedClass: predictedClass,
+            totalWeightCovered: Number.parseFloat(totalWeightCoveredString),
+            totalWeightMisclassified: Number.parseFloat(totalWeightMisclassifiedString)
         };
     }
 
     /**
      * Parses a node consisting of multiple lines. A node can be a decision tree or a leaf.
      * @param splitTreeString - the decision tree or leaf of the nodes line by line
-     * @returns the decision tree or leaf of the node as object
+     * @returns the decision tree or leaf of the node
      */
     private static parseNode(splitTreeString: string[]): DecisionTree | DecisionTreeLeaf {
         let firstLine: string = splitTreeString[0];
-        let startIndex: number;
-        let endIdentifier: string;
 
         if(splitTreeString.length == 1) {
             // it is a single leaf
             return this.parseLeaf(firstLine);
-        } else {
-            // it is a tree
-            // ATTRIBUTE
-            endIdentifier = ' < ';
-            let endIndex: number = firstLine.indexOf(endIdentifier);
-            const splitAttribute: string = firstLine.substring(0, endIndex);
+        }
 
-            // VALUE
-            startIndex = endIndex + endIdentifier.length;
-            const splitValueString: string = firstLine.substring(startIndex);
-            const splitValue: number = Number.parseFloat(splitValueString);
+        // it is a tree
+        const identifierRegex = /(?:\S\s)(\D{1,2})(?:\s\S)+/gm; // matches '<', ':' or '>='
+        const identifierFirstLine = identifierRegex.exec(firstLine)[1];
 
-            // LEFT CHILD
-            const leftChild: string[] = this.getChild(0, splitTreeString);
+        // ATTRIBUTE
+        let splitAttributeEndIndex: number = firstLine.indexOf(identifierFirstLine) - 1;
+        const splitAttribute: string = firstLine.substring(0, splitAttributeEndIndex);
 
-            let rightChildHeadIndex: number = leftChild.length;
+        // VALUE
+        const splitValueStartIndex: number = splitAttributeEndIndex + 3;
 
-            if(leftChild.length > 1) {
-                rightChildHeadIndex++;
+        let splitValueString: string;
+        let splitValue: number | string[] = null;
+        const children: Array<DecisionTree | DecisionTreeLeaf> = [];
+
+        let isNumericAttribute: boolean = true;
+
+        // numeric attribute
+        const rootNodeStrings: { line: string, index: number }[] = this.extractAllRootNodeStrings(splitTreeString);
+
+        rootNodeStrings.forEach(node => {
+            const indexOfColon: number = node.line.indexOf(':');
+            if(indexOfColon != -1) {
+                // there is a colon --> the split attribute points to a leaf
+                splitValueString = node.line.substring(splitValueStartIndex, indexOfColon - 1);
+            } else {
+                splitValueString = node.line.substring(splitValueStartIndex);
+            }
+            if(isNumericAttribute) {
+                splitValue = Number.parseFloat(splitValueString);
+                if(isNaN(splitValue)) {
+                    // it was not a numeric attribute
+                    isNumericAttribute = false;
+                    splitValue = [];
+                    (splitValue as string[]).push(splitValueString);
+                }
+            } else {
+                (splitValue as string[]).push(splitValueString);
             }
 
-            // RIGHT CHILD
-            const rightChild: string[] = this.getChild(rightChildHeadIndex, splitTreeString);
+            const childTree: string[] = this.getChild(node.index, splitTreeString);
+            children.push(this.parseNode(childTree));
+        });
 
-            return {
-                splitAttribute: splitAttribute,
-                splitValue: splitValue,
-                // recursive calls
-                leftChild: this.parseNode(leftChild),
-                rightChild: this.parseNode(rightChild)
-            };
-        }
+        return new DecisionTree({
+            splitAttribute: splitAttribute,
+            splitValue: splitValue,
+            children: children
+        } as DecisionTree);
     }
 
     /**
@@ -132,5 +149,33 @@ export class WekaTreeParserUtils {
         }
 
         return child;
+    }
+
+    /**
+     *
+     * @param splitTreeString
+     */
+    // TODO: doku
+    private static extractAllRootNodeStrings(splitTreeString: string[]): { line: string, index: number }[] {
+        const rootNodesLines: { line: string, index: number }[] = [];
+        splitTreeString.forEach((line, index) => {
+            const isRootNode: boolean = this.isRootNode(line);
+            if(isRootNode) {
+                rootNodesLines.push({
+                    line: line,
+                    index: index
+                });
+            }
+        });
+        return rootNodesLines;
+    }
+
+    /**
+     * Determines if the given line forms a root node.
+     * @param treeLine - the line to check.
+     */
+    private static isRootNode(treeLine: string): boolean {
+        const identifierIndex: number = treeLine.indexOf('|');
+        return identifierIndex === -1;
     }
 }

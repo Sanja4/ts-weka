@@ -1,5 +1,5 @@
 export class DecisionTreeLeaf {
-    value: string;
-    firstNumber: number;
-    secondNumber: number;
+    predictedClass: string;
+    totalWeightCovered: number;
+    totalWeightMisclassified: number;
 }

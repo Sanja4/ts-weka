@@ -51,18 +51,18 @@ export class WekaClassificationUtils {
 
             if(featureValue == null) {
                 // traverse all children and collect the votes of all paths
-                const resultsOfLeftChild: DecisionTreeLeaf[] = this.traverse(learnFeatures, decisionTree.leftChild);
-                const resultsOfRightChild: DecisionTreeLeaf[] = this.traverse(learnFeatures, decisionTree.rightChild);
+                const resultsOfLeftChild: DecisionTreeLeaf[] = this.traverse(learnFeatures, decisionTree.children[0]);
+                const resultsOfRightChild: DecisionTreeLeaf[] = this.traverse(learnFeatures, decisionTree.children[1]);
                 // combine the results
                 return resultsOfLeftChild.concat(resultsOfRightChild);
             } else {
                 // recursive call
                 if(featureValue < decisionTree.splitValue) {
                     // use the left child
-                    return this.traverse(learnFeatures, decisionTree.leftChild);
+                    return this.traverse(learnFeatures, decisionTree.children[0]);
                 } else {
                     // use the right child
-                    return this.traverse(learnFeatures, decisionTree.rightChild);
+                    return this.traverse(learnFeatures, decisionTree.children[1]);
                 }
             }
         } else {
@@ -87,22 +87,22 @@ export class WekaClassificationUtils {
     }
 
     /**
-     * For the majority voting the weight of the class of each leaf is used {@link DecisionTreeLeaf.firstNumber}
+     * For the majority voting the weight of the class of each leaf is used {@link DecisionTreeLeaf.totalWeightCovered}
      * @param votes
      */
     private static getMajorityVotingResult(votes: DecisionTreeLeaf[]): string {
         if(votes.length == 1) {
-            return votes[0].value;
+            return votes[0].predictedClass;
         }
 
         // count the weight of the votes per motion type
         const numberOfVotesPerClass: Map<string, number> = new Map<string, number>();
         for(const vote of votes) {
-            if(numberOfVotesPerClass.has(vote.value)) {
-                numberOfVotesPerClass.set(vote.value, numberOfVotesPerClass.get(vote.value) +
-                    vote.firstNumber);
+            if(numberOfVotesPerClass.has(vote.predictedClass)) {
+                numberOfVotesPerClass.set(vote.predictedClass, numberOfVotesPerClass.get(vote.predictedClass) +
+                    vote.totalWeightCovered);
             } else {
-                numberOfVotesPerClass.set(vote.value, vote.firstNumber);
+                numberOfVotesPerClass.set(vote.predictedClass, vote.totalWeightCovered);
             }
         }
 
