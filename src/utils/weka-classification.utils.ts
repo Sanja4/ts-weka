@@ -4,10 +4,16 @@ import {DecisionTreeLeaf} from '../model/decision-tree/decision-tree-leaf.model'
 
 export class WekaClassificationUtils {
 
-    public static classifyMultiple(learnFeatures: Features,
+    /**
+     * Classifies the given instance (features) using the given decision trees
+     * @param features - the features of the instance to classify
+     * @param decisionTrees - the decision trees to use for classification
+     * @returns the predicted class
+     */
+    public static classifyMultiple(features: Features,
                                    decisionTrees: DecisionTree[]): string {
         // use a majority vote of all decision trees
-        const votes: string[] = decisionTrees.map((decisionTree) => this.classify(learnFeatures, decisionTree));
+        const votes: string[] = decisionTrees.map((decisionTree) => this.classify(features, decisionTree));
         if(votes.length == 1) {
             return votes[0];
         }
@@ -26,7 +32,7 @@ export class WekaClassificationUtils {
     }
 
     /**
-     * Classifies the given instance  using the given decision tree
+     * Classifies the given instance (features) using the given decision tree
      * @param features - the features of the instance to classify
      * @param decisionTree - the decision tree to use for classification
      * @returns the predicted class
@@ -35,39 +41,57 @@ export class WekaClassificationUtils {
                            decisionTree: DecisionTree): string {
         // traverse the decision tree
         // use a majority vote of all paths
-        const votes: DecisionTreeLeaf[] = this.traverse(features, decisionTree);
+        const votes: DecisionTreeLeaf[] = this.traverseTreeOrLeaf(features, decisionTree);
         return this.getMajorityVotingResult(votes);
     }
 
-    public static traverse(features: Features,
-                           decisionTree: DecisionTree | DecisionTreeLeaf): DecisionTreeLeaf[] {
+    /**
+     * Traverses the given decision tree (which can be a tree or a leaf) using the given features and returns all leaves that can be reached using the features.
+     * @param features
+     * @param decisionTree - a decision tree (which can also be a leaf)
+     */
+    public static traverseTreeOrLeaf(features: Features,
+                                     decisionTree: DecisionTree | DecisionTreeLeaf): DecisionTreeLeaf[] {
         const isLeaf: boolean = (decisionTree as DecisionTree).splitAttribute == null;
 
         if(!isLeaf) {
-            // tree
-            decisionTree = decisionTree as DecisionTree;
-            // check the split
-            const featureValue: number = features[decisionTree.splitAttribute] as number;
-
-            if(featureValue == null) {
-                // traverse all children and collect the votes of all paths
-                const resultsOfLeftChild: DecisionTreeLeaf[] = this.traverse(features, decisionTree.children[0]);
-                const resultsOfRightChild: DecisionTreeLeaf[] = this.traverse(features, decisionTree.children[1]);
-                // combine the results
-                return resultsOfLeftChild.concat(resultsOfRightChild);
-            } else {
-                // recursive call
-                if(featureValue < decisionTree.splitValue) {
-                    // use the left child
-                    return this.traverse(features, decisionTree.children[0]);
-                } else {
-                    // use the right child
-                    return this.traverse(features, decisionTree.children[1]);
-                }
-            }
+           return this.traverseTree(features, decisionTree as DecisionTree);
         } else {
             // leaf
             return [(decisionTree as DecisionTreeLeaf)];
+        }
+    }
+
+    /**
+     * Traverses the given decision tree using the given features and returns all leaves that can be reached using the
+     * features. Contrary to {@link traverseTreeOrLeaf} this method only handles decision trees that are not only a leaf.
+     * @param features
+     * @param decisionTree - a decision tree
+     */
+    private static traverseTree(features: Features, decisionTree: DecisionTree): DecisionTreeLeaf[] {
+        // tree
+        decisionTree = decisionTree as DecisionTree;
+        // check the split
+        const featureValue: number = features[decisionTree.splitAttribute] as number;
+
+        // check if the feature value is known
+        if(featureValue == null) {
+            // feature value not given
+            // traverse all children and collect the votes of all paths
+            const resultsOfLeftChild: DecisionTreeLeaf[] = this.traverseTreeOrLeaf(features, decisionTree.children[0]);
+            const resultsOfRightChild: DecisionTreeLeaf[] = this.traverseTreeOrLeaf(features, decisionTree.children[1]);
+            // combine the results
+            return resultsOfLeftChild.concat(resultsOfRightChild);
+        } else {
+            // TODO check if enum or numeric attribute
+            // recursive call
+            if(featureValue < decisionTree.splitValue) {
+                // use the left child
+                return this.traverseTreeOrLeaf(features, decisionTree.children[0]);
+            } else {
+                // use the right child
+                return this.traverseTreeOrLeaf(features, decisionTree.children[1]);
+            }
         }
     }
 
