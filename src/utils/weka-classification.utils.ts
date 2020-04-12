@@ -2,7 +2,6 @@ import {Features} from '../model/features.model';
 import {DecisionTree} from '../model/decision-tree/decision-tree.model';
 import {DecisionTreeLeaf} from '../model/decision-tree/decision-tree-leaf.model';
 
-// TODO
 export class WekaClassificationUtils {
 
     public static classifyMultiple(learnFeatures: Features,
@@ -42,11 +41,12 @@ export class WekaClassificationUtils {
 
     public static traverse(learnFeatures: Features,
                            decisionTree: DecisionTree | DecisionTreeLeaf): DecisionTreeLeaf[] {
-        if((decisionTree as DecisionTree).splitAttribute != null) {
+        const isLeaf: boolean = (decisionTree as DecisionTree).splitAttribute == null;
+
+        if(!isLeaf) {
             // tree
             decisionTree = decisionTree as DecisionTree;
             // check the split
-            // TODO, allow also string values
             const featureValue: number = learnFeatures[decisionTree.splitAttribute] as number;
 
             if(featureValue == null) {
