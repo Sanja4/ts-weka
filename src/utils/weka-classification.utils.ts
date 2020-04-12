@@ -39,7 +39,7 @@ export class WekaClassificationUtils {
         return this.getMajorityVotingResult(votes);
     }
 
-    public static traverse(learnFeatures: Features,
+    public static traverse(features: Features,
                            decisionTree: DecisionTree | DecisionTreeLeaf): DecisionTreeLeaf[] {
         const isLeaf: boolean = (decisionTree as DecisionTree).splitAttribute == null;
 
@@ -47,22 +47,22 @@ export class WekaClassificationUtils {
             // tree
             decisionTree = decisionTree as DecisionTree;
             // check the split
-            const featureValue: number = learnFeatures[decisionTree.splitAttribute] as number;
+            const featureValue: number = features[decisionTree.splitAttribute] as number;
 
             if(featureValue == null) {
                 // traverse all children and collect the votes of all paths
-                const resultsOfLeftChild: DecisionTreeLeaf[] = this.traverse(learnFeatures, decisionTree.children[0]);
-                const resultsOfRightChild: DecisionTreeLeaf[] = this.traverse(learnFeatures, decisionTree.children[1]);
+                const resultsOfLeftChild: DecisionTreeLeaf[] = this.traverse(features, decisionTree.children[0]);
+                const resultsOfRightChild: DecisionTreeLeaf[] = this.traverse(features, decisionTree.children[1]);
                 // combine the results
                 return resultsOfLeftChild.concat(resultsOfRightChild);
             } else {
                 // recursive call
                 if(featureValue < decisionTree.splitValue) {
                     // use the left child
-                    return this.traverse(learnFeatures, decisionTree.children[0]);
+                    return this.traverse(features, decisionTree.children[0]);
                 } else {
                     // use the right child
-                    return this.traverse(learnFeatures, decisionTree.children[1]);
+                    return this.traverse(features, decisionTree.children[1]);
                 }
             }
         } else {
