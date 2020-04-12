@@ -72,7 +72,7 @@ export class WekaClassificationUtils {
         // tree
         decisionTree = decisionTree as DecisionTree;
         // check the split
-        const featureValue: number = features[decisionTree.splitAttribute] as number;
+        const featureValue: number | string = features[decisionTree.splitAttribute] as number | string;
 
         // check if the feature value is known
         if(featureValue == null) {
@@ -83,14 +83,20 @@ export class WekaClassificationUtils {
             // combine the results
             return resultsOfLeftChild.concat(resultsOfRightChild);
         } else {
-            // TODO check if enum or numeric attribute
             // recursive call
-            if(featureValue < decisionTree.splitValue) {
-                // use the left child
-                return this.traverseTreeOrLeaf(features, decisionTree.children[0]);
+            if(typeof decisionTree.splitValue == 'number') {
+                // numeric split attribute
+                if(featureValue as number < decisionTree.splitValue) {
+                    // use the left child
+                    return this.traverseTreeOrLeaf(features, decisionTree.children[0]);
+                } else {
+                    // use the right child
+                    return this.traverseTreeOrLeaf(features, decisionTree.children[1]);
+                }
             } else {
-                // use the right child
-                return this.traverseTreeOrLeaf(features, decisionTree.children[1]);
+                // enum split attribute
+                const index: number = (decisionTree.splitValue as string[]).findIndex((v) => v == featureValue);
+                return this.traverseTreeOrLeaf(features, decisionTree.children[index]);
             }
         }
     }
