@@ -6,17 +6,17 @@ describe('WekaTreeParserUtils', () => {
 
     describe('Binary Tree', () => {
         test('should parse a leaf (1)', () => {
-            const testLeaf: string = `accelerationFrequencyBandEnergy10To14Hz >= 0.86 : train (1.23/0.22)`;
+            const testLeaf: string = `featureB >= 0.86 : classT (1.23/0.22)`;
             const result: DecisionTreeLeaf = WekaTreeParserUtils.parseLeaf(testLeaf);
-            expect(result.predictedClass).toEqual('train');
+            expect(result.predictedClass).toEqual('classT');
             expect(result.totalWeightCovered).toEqual(1.23);
             expect(result.totalWeightMisclassified).toEqual(0.22);
         });
 
         test('should parse a leaf (2)', () => {
-            const testLeaf: string = `accelerationFrequencyBandEnergy8To10Hz < 0.49 : train (71.53/0)`;
+            const testLeaf: string = `featureA < 0.49 : classT (71.53/0)`;
             const result: DecisionTreeLeaf = WekaTreeParserUtils.parseLeaf(testLeaf);
-            expect(result.predictedClass).toEqual('train');
+            expect(result.predictedClass).toEqual('classT');
             expect(result.totalWeightCovered).toEqual(71.53);
             expect(result.totalWeightMisclassified).toEqual(0);
         });
@@ -24,15 +24,15 @@ describe('WekaTreeParserUtils', () => {
         test('should parse a tree (1)', () => {
             const result: DecisionTree = WekaTreeParserUtils.parse(binaryTreeString1);
             expect(result.splitValue).toEqual(0.86);
-            expect(result.splitAttribute).toEqual('accelerationFrequencyBandEnergy10To14Hz');
+            expect(result.splitAttribute).toEqual('featureB');
             const leftChild: DecisionTree = result.children[0] as DecisionTree;
-            expect(leftChild.splitAttribute).toEqual('accelerationFrequencyBandEnergy8To10Hz');
+            expect(leftChild.splitAttribute).toEqual('featureA');
             expect(leftChild.splitValue).toEqual(0.49);
-            expect((leftChild.children[0] as DecisionTreeLeaf).predictedClass).toEqual('train');
-            expect((leftChild.children[1] as DecisionTreeLeaf).predictedClass).toEqual('bus');
+            expect((leftChild.children[0] as DecisionTreeLeaf).predictedClass).toEqual('classT');
+            expect((leftChild.children[1] as DecisionTreeLeaf).predictedClass).toEqual('classB');
 
             const rightChild: DecisionTreeLeaf = result.children[1] as DecisionTreeLeaf;
-            expect(rightChild.predictedClass).toEqual('train');
+            expect(rightChild.predictedClass).toEqual('classT');
             expect(rightChild.totalWeightCovered).toEqual(1.23);
             expect(rightChild.totalWeightMisclassified).toEqual(0.22);
         });
@@ -44,10 +44,10 @@ describe('WekaTreeParserUtils', () => {
             const leftChild: DecisionTree = result.children[0] as DecisionTree;
             expect(leftChild.splitAttribute).toEqual('accelerationFrequencyBandEnergy22To25Hz');
             expect(leftChild.splitValue).toEqual(0.09);
-            expect((leftChild.children[0] as DecisionTreeLeaf).predictedClass).toEqual('stationary');
+            expect((leftChild.children[0] as DecisionTreeLeaf).predictedClass).toEqual('classS');
 
             const rightChild: DecisionTree = result.children[1] as DecisionTree;
-            expect(rightChild.splitAttribute).toEqual('trajectorySimilarityTrain');
+            expect(rightChild.splitAttribute).toEqual('trajectorySimilarityclassT');
             expect(rightChild.splitValue).toEqual(920.02);
         });
     });
@@ -63,210 +63,210 @@ describe('WekaTreeParserUtils', () => {
 
         test('should parse a tree (1)', () => {
             const root: DecisionTree = WekaTreeParserUtils.parse(normalTreeString1);
-            expect(root.splitAttribute).toEqual('predictionShort');
+            expect(root.splitAttribute).toEqual('featureC');
 
-            expect((root.splitValue as string[])[0]).toEqual('stationary');
-            expect((root.splitValue as string[])[1]).toEqual('walk');
-            expect((root.splitValue as string[])[2]).toEqual('bike');
-            expect((root.splitValue as string[])[3]).toEqual('car');
-            expect((root.splitValue as string[])[4]).toEqual('bus');
-            expect((root.splitValue as string[])[5]).toEqual('tram');
-            expect((root.splitValue as string[])[6]).toEqual('train');
+            expect((root.splitValue as string[])[0]).toEqual('classS');
+            expect((root.splitValue as string[])[1]).toEqual('classW');
+            expect((root.splitValue as string[])[2]).toEqual('classB');
+            expect((root.splitValue as string[])[3]).toEqual('classC');
+            expect((root.splitValue as string[])[4]).toEqual('classB');
+            expect((root.splitValue as string[])[5]).toEqual('classT2');
+            expect((root.splitValue as string[])[6]).toEqual('classT');
 
 
             // ----- child1 -----
             const child1: DecisionTree = root.children[0] as DecisionTree;
-            expect(child1.splitAttribute).toEqual('predictionLong');
+            expect(child1.splitAttribute).toEqual('featureE');
 
-            expect((child1.splitValue as string[])[0]).toEqual('stationary');
-            expect((child1.splitValue as string[])[1]).toEqual('walk');
-            expect((child1.splitValue as string[])[2]).toEqual('bike');
-            expect((child1.splitValue as string[])[3]).toEqual('car');
-            expect((child1.splitValue as string[])[4]).toEqual('bus');
-            expect((child1.splitValue as string[])[5]).toEqual('tram');
-            expect((child1.splitValue as string[])[6]).toEqual('train');
+            expect((child1.splitValue as string[])[0]).toEqual('classS');
+            expect((child1.splitValue as string[])[1]).toEqual('classW');
+            expect((child1.splitValue as string[])[2]).toEqual('classB');
+            expect((child1.splitValue as string[])[3]).toEqual('classC');
+            expect((child1.splitValue as string[])[4]).toEqual('classB');
+            expect((child1.splitValue as string[])[5]).toEqual('classT2');
+            expect((child1.splitValue as string[])[6]).toEqual('classT');
 
-            expect((child1.children[0] as DecisionTreeLeaf).predictedClass).toEqual('stationary');
+            expect((child1.children[0] as DecisionTreeLeaf).predictedClass).toEqual('classS');
             expect((child1.children[0] as DecisionTreeLeaf).totalWeightCovered).toEqual(361);
             expect((child1.children[0] as DecisionTreeLeaf).totalWeightMisclassified).toEqual(1);
 
-            expect((child1.children[1] as DecisionTreeLeaf).predictedClass).toEqual('stationary');
+            expect((child1.children[1] as DecisionTreeLeaf).predictedClass).toEqual('classS');
             expect((child1.children[1] as DecisionTreeLeaf).totalWeightCovered).toEqual(7);
             expect((child1.children[1] as DecisionTreeLeaf).totalWeightMisclassified).toEqual(2);
 
-            expect((child1.children[3] as DecisionTree).splitAttribute).toEqual('predictionMedium');
+            expect((child1.children[3] as DecisionTree).splitAttribute).toEqual('featureD');
             expect((child1.children[3] as DecisionTree).children.length).toEqual(7);
 
             // ----- child2 -----
             const child2: DecisionTree = root.children[1] as DecisionTree;
-            expect(child2.splitAttribute).toEqual('predictionLong');
+            expect(child2.splitAttribute).toEqual('featureE');
             expect(child2.children.length).toEqual(7);
-            expect(child2.splitValue[5]).toEqual('tram');
-            expect((child2.children[5] as DecisionTreeLeaf).predictedClass).toEqual('bike');
+            expect(child2.splitValue[5]).toEqual('classT2');
+            expect((child2.children[5] as DecisionTreeLeaf).predictedClass).toEqual('classB');
             expect((child2.children[5] as DecisionTreeLeaf).totalWeightCovered).toEqual(16);
             expect((child2.children[5] as DecisionTreeLeaf).totalWeightMisclassified).toEqual(2);
         });
     });
 });
 
-const binaryTreeString1: string = `accelerationFrequencyBandEnergy10To14Hz < 0.86
-|   accelerationFrequencyBandEnergy8To10Hz < 0.49 : train (71.53/0)
-|   accelerationFrequencyBandEnergy8To10Hz >= 0.49 : bus (0.11/0)
-accelerationFrequencyBandEnergy10To14Hz >= 0.86 : train (1.23/0.22)`;
+const binaryTreeString1: string = `featureB < 0.86
+|   featureA < 0.49 : classT (71.53/0)
+|   featureA >= 0.49 : classB (0.11/0)
+featureB >= 0.86 : classT (1.23/0.22)`;
 
 const binaryTreeString2: string = `accumulatedTravelDistance < 4.99
-|   accelerationFrequencyBandEnergy22To25Hz < 0.09 : stationary (431.61/0)
+|   accelerationFrequencyBandEnergy22To25Hz < 0.09 : classS (431.61/0)
 |   accelerationFrequencyBandEnergy22To25Hz >= 0.09
 |   |   accelerationMean < 0.04
-|   |   |   accelerationFrequencyBandEnergy25To30Hz < 0.14 : stationary (12.74/1.78)
-|   |   |   accelerationFrequencyBandEnergy25To30Hz >= 0.14 : stationary (41.22/0)
-|   |   accelerationMean >= 0.04 : train (3.96/1)
+|   |   |   accelerationFrequencyBandEnergy25To30Hz < 0.14 : classS (12.74/1.78)
+|   |   |   accelerationFrequencyBandEnergy25To30Hz >= 0.14 : classS (41.22/0)
+|   |   accelerationMean >= 0.04 : classT (3.96/1)
 accumulatedTravelDistance >= 4.99
-|   trajectorySimilarityTrain < 920.02 : train (27.28/18.02)
-|   trajectorySimilarityTrain >= 920.02
+|   trajectorySimilarityclassT < 920.02 : classT (27.28/18.02)
+|   trajectorySimilarityclassT >= 920.02
 |   |   accelerationFrequencyBandEnergy14To20Hz < 0.08
-|   |   |   accelerationFrequencyBandEnergy10To14Hz < 0.07 : stationary (26.12/0)
-|   |   |   accelerationFrequencyBandEnergy10To14Hz >= 0.07 : stationary (39/19)
+|   |   |   featureB < 0.07 : classS (26.12/0)
+|   |   |   featureB >= 0.07 : classS (39/19)
 |   |   accelerationFrequencyBandEnergy14To20Hz >= 0.08
-|   |   |   accelerationFrequencyBandEnergy25To30Hz < 0.13 : stationary (193.22/0)
+|   |   |   accelerationFrequencyBandEnergy25To30Hz < 0.13 : classS (193.22/0)
 |   |   |   accelerationFrequencyBandEnergy25To30Hz >= 0.13
 |   |   |   |   accelerationMedian < 0.04
 |   |   |   |   |   acceleration95Quantile < 0.07
-|   |   |   |   |   |   accelerationFrequencyBandEnergy27To28Hz < 0.02 : stationary (1.12/0.37)
-|   |   |   |   |   |   accelerationFrequencyBandEnergy27To28Hz >= 0.02 : stationary (46.1/0)
-|   |   |   |   |   acceleration95Quantile >= 0.07 : train (0.37/-0)
-|   |   |   |   accelerationMedian >= 0.04 : train (3.25/1)`;
+|   |   |   |   |   |   accelerationFrequencyBandEnergy27To28Hz < 0.02 : classS (1.12/0.37)
+|   |   |   |   |   |   accelerationFrequencyBandEnergy27To28Hz >= 0.02 : classS (46.1/0)
+|   |   |   |   |   acceleration95Quantile >= 0.07 : classT (0.37/-0)
+|   |   |   |   accelerationMedian >= 0.04 : classT (3.25/1)`;
 
-const normalTreeString1: string = `predictionShort = stationary
-|   predictionLong = stationary : stationary (361/1)
-|   predictionLong = walk : stationary (7/2)
-|   predictionLong = bike : stationary (3/0)
-|   predictionLong = car
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : car (1/0)
-|   |   predictionMedium = bus : stationary (26/7)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-|   predictionLong = bus : stationary (19/4)
-|   predictionLong = tram
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : stationary (2/1)
-|   |   predictionMedium = bus : stationary (41/10)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-|   predictionLong = train
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : stationary (2/0)
-|   |   predictionMedium = bus : stationary (81/36)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-predictionShort = walk
-|   predictionLong = stationary : walk (197/0)
-|   predictionLong = walk : walk (640/2)
-|   predictionLong = bike : walk (25/0)
-|   predictionLong = car : walk (52/1)
-|   predictionLong = bus : walk (11/0)
-|   predictionLong = tram : bike (16/2)
-|   predictionLong = train : bike (1/0)
-predictionShort = bike : bike (65/0)
-predictionShort = car
-|   predictionLong = stationary : tram (2/0)
-|   predictionLong = walk : stationary (0/0)
-|   predictionLong = bike : bus (5/2)
-|   predictionLong = car
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : car (438/15)
-|   |   predictionMedium = bus : car (289/47)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-|   predictionLong = bus
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : bus (22/8)
-|   |   predictionMedium = bus : bus (32/15)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-|   predictionLong = tram
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : bike (41/6)
-|   |   predictionMedium = bus : stationary (11/8)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-|   predictionLong = train
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : bike (14/5)
-|   |   predictionMedium = bus : train (12/2)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-predictionShort = bus
-|   predictionMedium = stationary : stationary (0/0)
-|   predictionMedium = walk : stationary (0/0)
-|   predictionMedium = bike : stationary (0/0)
-|   predictionMedium = car
-|   |   predictionLong = stationary : train (3/1)
-|   |   predictionLong = walk : stationary (3/1)
-|   |   predictionLong = bike : bus (10/2)
-|   |   predictionLong = car : bus (89/33)
-|   |   predictionLong = bus : bus (69/6)
-|   |   predictionLong = tram : bike (173/13)
-|   |   predictionLong = train : bike (67/4)
-|   predictionMedium = bus
-|   |   predictionLong = stationary : stationary (8/4)
-|   |   predictionLong = walk : stationary (0/0)
-|   |   predictionLong = bike : stationary (3/0)
-|   |   predictionLong = car : bus (172/51)
-|   |   predictionLong = bus : bus (217/33)
-|   |   predictionLong = tram : bus (66/44)
-|   |   predictionLong = train : train (77/31)
-|   predictionMedium = tram : stationary (0/0)
-|   predictionMedium = train : stationary (0/0)
-predictionShort = tram
-|   predictionLong = stationary : stationary (0/0)
-|   predictionLong = walk : stationary (0/0)
-|   predictionLong = bike : stationary (0/0)
-|   predictionLong = car : stationary (14/9)
-|   predictionLong = bus
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : tram (1/0)
-|   |   predictionMedium = bus : tram (30/10)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-|   predictionLong = tram : tram (104/11)
-|   predictionLong = train
-|   |   predictionMedium = stationary : stationary (0/0)
-|   |   predictionMedium = walk : stationary (0/0)
-|   |   predictionMedium = bike : stationary (0/0)
-|   |   predictionMedium = car : tram (2/0)
-|   |   predictionMedium = bus : tram (50/25)
-|   |   predictionMedium = tram : stationary (0/0)
-|   |   predictionMedium = train : stationary (0/0)
-predictionShort = train
-|   predictionMedium = stationary : stationary (0/0)
-|   predictionMedium = walk : stationary (0/0)
-|   predictionMedium = bike : stationary (0/0)
-|   predictionMedium = car : car (19/10)
-|   predictionMedium = bus
-|   |   predictionLong = stationary : stationary (18/7)
-|   |   predictionLong = walk : stationary (0/0)
-|   |   predictionLong = bike : stationary (1/0)
-|   |   predictionLong = car : train (13/0)
-|   |   predictionLong = bus : train (17/8)
-|   |   predictionLong = tram : stationary (20/9)
-|   |   predictionLong = train : train (239/21)
-|   predictionMedium = tram : stationary (0/0)
-|   predictionMedium = train : stationary (0/0)`;
+const normalTreeString1: string = `featureC = classS
+|   featureE = classS : classS (361/1)
+|   featureE = classW : classS (7/2)
+|   featureE = classB : classS (3/0)
+|   featureE = classC
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classC (1/0)
+|   |   featureD = classB : classS (26/7)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+|   featureE = classB : classS (19/4)
+|   featureE = classT2
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classS (2/1)
+|   |   featureD = classB : classS (41/10)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+|   featureE = classT
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classS (2/0)
+|   |   featureD = classB : classS (81/36)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+featureC = classW
+|   featureE = classS : classW (197/0)
+|   featureE = classW : classW (640/2)
+|   featureE = classB : classW (25/0)
+|   featureE = classC : classW (52/1)
+|   featureE = classB : classW (11/0)
+|   featureE = classT2 : classB (16/2)
+|   featureE = classT : classB (1/0)
+featureC = classB : classB (65/0)
+featureC = classC
+|   featureE = classS : classT2 (2/0)
+|   featureE = classW : classS (0/0)
+|   featureE = classB : classB (5/2)
+|   featureE = classC
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classC (438/15)
+|   |   featureD = classB : classC (289/47)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+|   featureE = classB
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classB (22/8)
+|   |   featureD = classB : classB (32/15)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+|   featureE = classT2
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classB (41/6)
+|   |   featureD = classB : classS (11/8)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+|   featureE = classT
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classB (14/5)
+|   |   featureD = classB : classT (12/2)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+featureC = classB
+|   featureD = classS : classS (0/0)
+|   featureD = classW : classS (0/0)
+|   featureD = classB : classS (0/0)
+|   featureD = classC
+|   |   featureE = classS : classT (3/1)
+|   |   featureE = classW : classS (3/1)
+|   |   featureE = classB : classB (10/2)
+|   |   featureE = classC : classB (89/33)
+|   |   featureE = classB : classB (69/6)
+|   |   featureE = classT2 : classB (173/13)
+|   |   featureE = classT : classB (67/4)
+|   featureD = classB
+|   |   featureE = classS : classS (8/4)
+|   |   featureE = classW : classS (0/0)
+|   |   featureE = classB : classS (3/0)
+|   |   featureE = classC : classB (172/51)
+|   |   featureE = classB : classB (217/33)
+|   |   featureE = classT2 : classB (66/44)
+|   |   featureE = classT : classT (77/31)
+|   featureD = classT2 : classS (0/0)
+|   featureD = classT : classS (0/0)
+featureC = classT2
+|   featureE = classS : classS (0/0)
+|   featureE = classW : classS (0/0)
+|   featureE = classB : classS (0/0)
+|   featureE = classC : classS (14/9)
+|   featureE = classB
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classT2 (1/0)
+|   |   featureD = classB : classT2 (30/10)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+|   featureE = classT2 : classT2 (104/11)
+|   featureE = classT
+|   |   featureD = classS : classS (0/0)
+|   |   featureD = classW : classS (0/0)
+|   |   featureD = classB : classS (0/0)
+|   |   featureD = classC : classT2 (2/0)
+|   |   featureD = classB : classT2 (50/25)
+|   |   featureD = classT2 : classS (0/0)
+|   |   featureD = classT : classS (0/0)
+featureC = classT
+|   featureD = classS : classS (0/0)
+|   featureD = classW : classS (0/0)
+|   featureD = classB : classS (0/0)
+|   featureD = classC : classC (19/10)
+|   featureD = classB
+|   |   featureE = classS : classS (18/7)
+|   |   featureE = classW : classS (0/0)
+|   |   featureE = classB : classS (1/0)
+|   |   featureE = classC : classT (13/0)
+|   |   featureE = classB : classT (17/8)
+|   |   featureE = classT2 : classS (20/9)
+|   |   featureE = classT : classT (239/21)
+|   featureD = classT2 : classS (0/0)
+|   featureD = classT : classS (0/0)`;
