@@ -152,10 +152,9 @@ export class WekaTreeParserUtils {
     }
 
     /**
-     *
-     * @param splitTreeString
+     * Returns all root lines/nodes from the given string array.
+     * @param splitTreeString - array containing all lines of a tree or sub-tree.
      */
-    // TODO: doku
     private static extractAllRootNodeStrings(splitTreeString: string[]): { line: string, index: number }[] {
         const rootNodesLines: { line: string, index: number }[] = [];
         splitTreeString.forEach((line, index) => {
