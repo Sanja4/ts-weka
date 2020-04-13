@@ -6,7 +6,7 @@
     "build": "tsc",
     "test": "jest",
     "prepare": "npm run build",
-    "publish": "npm publish"
+    "publish_to_npm": "npm publish"
   },
   "repository": {
     "type": "git",
