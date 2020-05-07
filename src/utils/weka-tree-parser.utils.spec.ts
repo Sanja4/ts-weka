@@ -1,6 +1,6 @@
 import {DecisionTree} from '../model/decision-tree/decision-tree.model';
 import {DecisionTreeLeaf} from '../model/decision-tree/decision-tree-leaf.model';
-import {WekaTreeParserUtils} from './weka-tree-parser.utils.';
+import {WekaTreeParserUtils} from './weka-tree-parser.utils';
 
 describe('WekaTreeParserUtils', () => {
 

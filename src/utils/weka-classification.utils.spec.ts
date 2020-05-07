@@ -1,4 +1,4 @@
-import {WekaTreeParserUtils} from './weka-tree-parser.utils.';
+import {WekaTreeParserUtils} from './weka-tree-parser.utils';
 import {WekaClassificationUtils} from './weka-classification.utils';
 import {DecisionTree} from '../model/decision-tree/decision-tree.model';
 import {Features} from '../model/features.model';
