@@ -86,7 +86,7 @@ export class WekaClassificationUtils {
             // recursive call
             if(typeof decisionTree.splitValue == 'number') {
                 // numeric split attribute
-                if(featureValue as number < decisionTree.splitValue) {
+                if((featureValue as number) < decisionTree.splitValue) {
                     // use the left child
                     return this.traverseTreeOrLeaf(features, decisionTree.children[0]);
                 } else {
