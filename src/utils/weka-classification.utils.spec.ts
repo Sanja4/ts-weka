@@ -2,6 +2,7 @@ import {WekaTreeParserUtils} from './weka-tree-parser.utils';
 import {WekaClassificationUtils} from './weka-classification.utils';
 import {DecisionTree} from '../model/decision-tree/decision-tree.model';
 import {Features} from '../model/features.model';
+import {Vote} from '../model/vote.model';
 
 describe('WekaClassificationUtils', () => {
 
@@ -10,8 +11,8 @@ describe('WekaClassificationUtils', () => {
         const features: Features = new Features();
         features.featureB = 0.9;
 
-        const result: string = WekaClassificationUtils.classify(features, decisionTree);
-        expect(result).toEqual('classT');
+        const result: Vote = WekaClassificationUtils.classify(features, decisionTree);
+        expect(result.class).toEqual('classT');
     });
 
     test('should classify an instance as classB', () => {
@@ -20,8 +21,8 @@ describe('WekaClassificationUtils', () => {
         features.featureB = 0.8;
         features.featureA = 0.5;
 
-        const result: string = WekaClassificationUtils.classify(features, decisionTree);
-        expect(result).toEqual('classB');
+        const result: Vote = WekaClassificationUtils.classify(features, decisionTree);
+        expect(result.class).toEqual('classB');
     });
 
     test('should classify an instance as classS', () => {
@@ -30,8 +31,8 @@ describe('WekaClassificationUtils', () => {
         features.featureC = 'classS';
         features.featureE = 'classS';
 
-        const result: string = WekaClassificationUtils.classify(features, decisionTree);
-        expect(result).toEqual('classS');
+        const result: Vote = WekaClassificationUtils.classify(features, decisionTree);
+        expect(result.class).toEqual('classS');
     });
 
     test('should classify an instance as classC', () => {
@@ -41,8 +42,8 @@ describe('WekaClassificationUtils', () => {
         features.featureE = 'classC';
         features.featureD = 'classC';
 
-        const result: string = WekaClassificationUtils.classify(features, decisionTree);
-        expect(result).toEqual('classC');
+        const result: Vote = WekaClassificationUtils.classify(features, decisionTree);
+        expect(result.class).toEqual('classC');
     });
 });
 

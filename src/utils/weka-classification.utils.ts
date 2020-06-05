@@ -1,6 +1,7 @@
 import {Features} from '../model/features.model';
 import {DecisionTree} from '../model/decision-tree/decision-tree.model';
 import {DecisionTreeLeaf} from '../model/decision-tree/decision-tree-leaf.model';
+import {Vote} from '../model/vote.model';
 
 export class WekaClassificationUtils {
 
@@ -11,24 +12,25 @@ export class WekaClassificationUtils {
      * @returns the predicted class
      */
     public static classifyMultiple(features: Features,
-                                   decisionTrees: DecisionTree[]): string {
+                                   decisionTrees: DecisionTree[]): Vote {
         // use a majority vote of all decision trees
-        const votes: string[] = decisionTrees.map((decisionTree) => this.classify(features, decisionTree));
+        const votes: Vote[] = decisionTrees.map((decisionTree) => this.classify(features, decisionTree));
         if(votes.length == 1) {
             return votes[0];
         }
 
         // count the weight of the votes per class
-        const numberOfVotesPerClass: Map<string, number> = new Map<string, number>();
+        const weightOfVotesPerClass: Map<string, number> = new Map<string, number>();
+
         for(const vote of votes) {
-            if(numberOfVotesPerClass.has(vote)) {
-                numberOfVotesPerClass.set(vote, numberOfVotesPerClass.get(vote) + 1);
+            if(weightOfVotesPerClass.has(vote.class)) {
+                weightOfVotesPerClass.set(vote.class, weightOfVotesPerClass.get(vote.class) + vote.weight);
             } else {
-                numberOfVotesPerClass.set(vote, 1);
+                weightOfVotesPerClass.set(vote.class, vote.weight);
             }
         }
 
-        return this.getClassWithMaxVotes(numberOfVotesPerClass);
+        return this.getClassWithMaxVotes(weightOfVotesPerClass);
     }
 
     /**
@@ -38,7 +40,7 @@ export class WekaClassificationUtils {
      * @returns the predicted class
      */
     public static classify(features: Features,
-                           decisionTree: DecisionTree): string {
+                           decisionTree: DecisionTree): Vote {
         // traverse the decision tree
         // use a majority vote of all paths
         const votes: DecisionTreeLeaf[] = this.traverseTreeOrLeaf(features, decisionTree);
@@ -101,7 +103,7 @@ export class WekaClassificationUtils {
         }
     }
 
-    private static getClassWithMaxVotes(numberOfVotesPerClass: Map<string, number>): string {
+    private static getClassWithMaxVotes(numberOfVotesPerClass: Map<string, number>): Vote {
         // find the maximum value; care: use -1 as start value and not 0 because for enum only trees, the total weight of a leaf might be 0
         let maxWeightOfVotes: number = -1;
         let classWithMaxVotes: string;
@@ -113,29 +115,30 @@ export class WekaClassificationUtils {
             }
         }
 
-        return classWithMaxVotes;
+        return new Vote({class: classWithMaxVotes, weight: maxWeightOfVotes});
     }
 
     /**
      * For the majority voting the weight of the class of each leaf is used {@link DecisionTreeLeaf.totalWeightCovered}
      * @param votes
      */
-    private static getMajorityVotingResult(votes: DecisionTreeLeaf[]): string {
+    private static getMajorityVotingResult(votes: DecisionTreeLeaf[]): Vote {
         if(votes.length == 1) {
-            return votes[0].predictedClass;
+            return new Vote({class: votes[0].predictedClass, weight: votes[0].totalWeightCovered});
         }
 
         // count the weight of the votes per class
-        const numberOfVotesPerClass: Map<string, number> = new Map<string, number>();
+        const weightOfVotesPerClass: Map<string, number> = new Map<string, number>();
+
         for(const vote of votes) {
-            if(numberOfVotesPerClass.has(vote.predictedClass)) {
-                numberOfVotesPerClass.set(vote.predictedClass, numberOfVotesPerClass.get(vote.predictedClass) +
+            if(weightOfVotesPerClass.has(vote.predictedClass)) {
+                weightOfVotesPerClass.set(vote.predictedClass, weightOfVotesPerClass.get(vote.predictedClass) +
                     vote.totalWeightCovered);
             } else {
-                numberOfVotesPerClass.set(vote.predictedClass, vote.totalWeightCovered);
+                weightOfVotesPerClass.set(vote.predictedClass, vote.totalWeightCovered);
             }
         }
 
-        return this.getClassWithMaxVotes(numberOfVotesPerClass);
+        return this.getClassWithMaxVotes(weightOfVotesPerClass);
     }
 }
