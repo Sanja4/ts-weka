@@ -28,7 +28,7 @@ export class WekaClassificationUtils {
             }
         }
 
-        return this.getMotionTypeWithMaxVotes(numberOfVotesPerClass);
+        return this.getClassWithMaxVotes(numberOfVotesPerClass);
     }
 
     /**
@@ -101,12 +101,12 @@ export class WekaClassificationUtils {
         }
     }
 
-    private static getMotionTypeWithMaxVotes(numberOfVotesPerMotionType: Map<string, number>): string {
-        // find the maximum value
-        let maxWeightOfVotes: number = 0;
+    private static getClassWithMaxVotes(numberOfVotesPerClass: Map<string, number>): string {
+        // find the maximum value; care: use -1 as start value and not 0 because for enum only trees, the total weight of a leaf might be 0
+        let maxWeightOfVotes: number = -1;
         let classWithMaxVotes: string;
 
-        for(const [motionType, numberOfVotes] of numberOfVotesPerMotionType) {
+        for(const [motionType, numberOfVotes] of numberOfVotesPerClass) {
             if(numberOfVotes > maxWeightOfVotes) {
                 maxWeightOfVotes = numberOfVotes;
                 classWithMaxVotes = motionType;
@@ -125,7 +125,7 @@ export class WekaClassificationUtils {
             return votes[0].predictedClass;
         }
 
-        // count the weight of the votes per motion type
+        // count the weight of the votes per class
         const numberOfVotesPerClass: Map<string, number> = new Map<string, number>();
         for(const vote of votes) {
             if(numberOfVotesPerClass.has(vote.predictedClass)) {
@@ -136,6 +136,6 @@ export class WekaClassificationUtils {
             }
         }
 
-        return this.getMotionTypeWithMaxVotes(numberOfVotesPerClass);
+        return this.getClassWithMaxVotes(numberOfVotesPerClass);
     }
 }
