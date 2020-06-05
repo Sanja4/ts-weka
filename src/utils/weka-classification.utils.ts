@@ -9,10 +9,11 @@ export class WekaClassificationUtils {
      * Classifies the given instance (features) using the given decision trees
      * @param features - the features of the instance to classify
      * @param decisionTrees - the decision trees to use for classification
+     * @param useMajorityVoting - if majority voting (only counting the number of votes) or summarizing the total weight per class should be used for aggregating the predictions per decision tree
      * @returns the predicted class
      */
     public static classifyMultiple(features: Features,
-                                   decisionTrees: DecisionTree[]): Vote {
+                                   decisionTrees: DecisionTree[], useMajorityVoting: boolean): Vote {
         // use a majority vote of all decision trees
         const votes: Vote[] = decisionTrees.map((decisionTree) => this.classify(features, decisionTree));
         if(votes.length == 1) {
@@ -23,10 +24,12 @@ export class WekaClassificationUtils {
         const weightOfVotesPerClass: Map<string, number> = new Map<string, number>();
 
         for(const vote of votes) {
+            const weightToAdd: number = useMajorityVoting ? 1 : vote.weight;
+
             if(weightOfVotesPerClass.has(vote.class)) {
-                weightOfVotesPerClass.set(vote.class, weightOfVotesPerClass.get(vote.class) + vote.weight);
+                weightOfVotesPerClass.set(vote.class, weightOfVotesPerClass.get(vote.class) + weightToAdd);
             } else {
-                weightOfVotesPerClass.set(vote.class, vote.weight);
+                weightOfVotesPerClass.set(vote.class, weightToAdd);
             }
         }
 
