@@ -81,12 +81,16 @@ export class WekaClassificationUtils {
 
         // check if the feature value is known
         if(featureValue == null) {
-            // feature value not given
-            // traverse all children and collect the votes of all paths
-            const resultsOfLeftChild: DecisionTreeLeaf[] = this.traverseTreeOrLeaf(features, decisionTree.children[0]);
-            const resultsOfRightChild: DecisionTreeLeaf[] = this.traverseTreeOrLeaf(features, decisionTree.children[1]);
+            // feature value not given; traverse all children and collect the votes of all paths
+            let resultsOfChildren = [];
+
+            for(const child of decisionTree.children) {
+                const resultsOfChild: DecisionTreeLeaf[] = this.traverseTreeOrLeaf(features, child);
+                resultsOfChildren = resultsOfChildren.concat(resultsOfChild);
+            }
+
             // combine the results
-            return resultsOfLeftChild.concat(resultsOfRightChild);
+           return resultsOfChildren;
         } else {
             // recursive call
             if(typeof decisionTree.splitValue == 'number') {
